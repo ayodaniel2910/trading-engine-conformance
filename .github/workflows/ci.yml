@@ -83,3 +83,33 @@ jobs:
       - name: Adapter tests
         shell: pwsh
         run: .\.venv\Scripts\python.exe -m pytest --cov --cov-report=term-missing
+
+  vectorbt-adapter:
+    name: pinned vectorbt stage-zero adapter (CPython 3.13)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Create isolated adapter environment
+        shell: pwsh
+        run: |
+          python -m venv .venv-vectorbt
+          .\.venv-vectorbt\Scripts\python.exe -m pip install -c requirements/vectorbt-resolved.txt -e ".[test,dev,security,vectorbt]"
+
+      - name: Prove Rust is absent and probe pins
+        shell: pwsh
+        run: |
+          if (.\.venv-vectorbt\Scripts\python.exe -m pip show vectorbt-rust) { throw "vectorbt-rust must not be installed" }
+          .\.venv-vectorbt\Scripts\tec.exe adapter vectorbt doctor --json
+
+      - name: Adapter tests and branch coverage
+        shell: pwsh
+        run: .\.venv-vectorbt\Scripts\python.exe -m pytest tests/unit tests/adversarial/test_vectorbt_isolation.py tests/cli/test_vectorbt_cli.py tests/integration/test_vectorbt_offline.py -k vectorbt --cov=trading_engine_conformance.adapters.vectorbt --cov-branch --cov-report=term-missing --cov-fail-under=95
+
+      - name: Adapter dependency audit
+        shell: pwsh
+        run: .\.venv-vectorbt\Scripts\python.exe -m pip_audit

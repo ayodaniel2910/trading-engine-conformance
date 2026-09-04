@@ -13,6 +13,7 @@ import json
 import platform
 import sys
 import time
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +26,16 @@ from trading_engine_conformance.adapters.nautilus.errors import NautilusAdapterE
 from trading_engine_conformance.adapters.nautilus.golden import compare_golden_cases
 from trading_engine_conformance.adapters.nautilus.profile import NautilusResearchProfile
 from trading_engine_conformance.adapters.nautilus.runner import launch_worker
+from trading_engine_conformance.adapters.vectorbt.benchmark import run_benchmark
+from trading_engine_conformance.adapters.vectorbt.capabilities import (
+    probe_environment as probe_vectorbt_environment,
+)
+from trading_engine_conformance.adapters.vectorbt.errors import VectorbtAdapterError
+from trading_engine_conformance.adapters.vectorbt.models import ScreeningCosts
+from trading_engine_conformance.adapters.vectorbt.runner import (
+    launch_worker as launch_vectorbt_worker,
+)
+from trading_engine_conformance.adapters.vectorbt.worker import verify_published_ledger
 from trading_engine_conformance.canonical import canonical_json_dumps
 from trading_engine_conformance.golden.cases import run_all_cases, run_case_file
 from trading_engine_conformance.integrity.atomic import atomic_write_bytes
@@ -236,6 +247,120 @@ def nautilus_compare_golden(
             "execution_authorized": False,
             "profitability_claimed": False,
         }
+        _emit(payload, [f"FAILED: {exc}"], as_json=as_json)
+        sys.exit(1)
+
+
+@adapter_group.group("vectorbt")
+def vectorbt_group() -> None:
+    """Pinned vectorbt 1.1.0 development-only stage-zero screener."""
+
+
+def _doctor_cost_contract() -> ScreeningCosts:
+    """Explicit values used only to exercise the probe's required-cost contract."""
+    return ScreeningCosts(
+        initial_cash=Decimal(1),
+        order_size=Decimal(1),
+        fee_rate=Decimal(0),
+        fixed_fee=Decimal(0),
+        slippage_rate=Decimal(0),
+    )
+
+
+@vectorbt_group.command("doctor")
+@click.option("--out", "output_path", type=click.Path(path_type=Path, dir_okay=False))
+@click.option("--json", "as_json", is_flag=True, default=False)
+def vectorbt_doctor(output_path: Path | None, as_json: bool) -> None:
+    """Probe the pinned Numba-only dependency stack without importing it."""
+    result = probe_vectorbt_environment(
+        engine="numba",
+        assumptions_pinned=True,
+        costs=_doctor_cost_contract(),
+    )
+    payload = result.as_dict()
+    if output_path is not None:
+        atomic_write_bytes(output_path, canonical_json_dumps(payload).encode("utf-8"))
+    _emit(payload, [f"{key}: {value}" for key, value in payload.items()], as_json=as_json)
+    sys.exit(0 if result.ok else 1)
+
+
+@vectorbt_group.command("screen")
+@click.option("--input-dir", type=click.Path(path_type=Path, file_okay=False), required=True)
+@click.option("--output-dir", type=click.Path(path_type=Path, file_okay=False), required=True)
+@click.option("--json", "as_json", is_flag=True, default=False)
+def vectorbt_screen(input_dir: Path, output_dir: Path, as_json: bool) -> None:
+    """Launch a fresh offline worker for one complete manifested family."""
+    try:
+        launch_vectorbt_worker(input_dir, output_dir)
+        payload = {
+            "ok": True,
+            "output_dir": str(output_dir),
+            "output_label": "eligible_for_independent_reimplementation",
+            "execution_authorized": False,
+            "profitability_claimed": False,
+            "promotion_authorized": False,
+        }
+        _emit(payload, [f"wrote isolated screening ledger to {output_dir}"], as_json=as_json)
+    except (VectorbtAdapterError, OSError, ValueError) as exc:
+        payload = {
+            "ok": False,
+            "error": str(exc),
+            "execution_authorized": False,
+            "profitability_claimed": False,
+            "promotion_authorized": False,
+        }
+        _emit(payload, [f"FAILED: {exc}"], as_json=as_json)
+        sys.exit(1)
+
+
+@vectorbt_group.command("verify-ledger")
+@click.option("--input-dir", type=click.Path(path_type=Path, file_okay=False), required=True)
+@click.option("--ledger-dir", type=click.Path(path_type=Path, file_okay=False), required=True)
+@click.option("--out", "output_path", type=click.Path(path_type=Path, dir_okay=False))
+@click.option("--json", "as_json", is_flag=True, default=False)
+def vectorbt_verify_ledger(
+    input_dir: Path, ledger_dir: Path, output_path: Path | None, as_json: bool
+) -> None:
+    """Verify manifests, complete-family accounting, labels, and semantic digests."""
+    try:
+        receipt = verify_published_ledger(input_dir, ledger_dir)
+        payload = receipt.model_dump(mode="json")
+        if output_path is not None:
+            atomic_write_bytes(output_path, canonical_json_dumps(payload).encode("utf-8"))
+        _emit(payload, [f"ok: {receipt.ok}"], as_json=as_json)
+    except (VectorbtAdapterError, OSError, ValueError) as exc:
+        payload = {"ok": False, "error": str(exc)}
+        _emit(payload, [f"FAILED: {exc}"], as_json=as_json)
+        sys.exit(1)
+
+
+@vectorbt_group.command("benchmark")
+@click.option("--rows", type=click.IntRange(min=1), default=5_000, show_default=True)
+@click.option("--strategies", type=click.IntRange(min=1), default=400, show_default=True)
+@click.option("--seed", type=click.IntRange(min=0), default=42, show_default=True)
+@click.option("--out", "output_path", type=click.Path(path_type=Path, dir_okay=False))
+@click.option("--json", "as_json", is_flag=True, default=False)
+def vectorbt_benchmark(
+    rows: int, strategies: int, seed: int, output_path: Path | None, as_json: bool
+) -> None:
+    """Run the >=2,000,000-cell deterministic synthetic performance gate."""
+    try:
+        payload = run_benchmark(rows=rows, strategies=strategies, seed=seed)
+        if output_path is not None:
+            atomic_write_bytes(output_path, canonical_json_dumps(payload).encode("utf-8"))
+        _emit(
+            payload,
+            [
+                f"ok: {payload['ok']}",
+                f"cells: {rows * strategies}",
+                "synthetic performance only; no strategy evidence",
+            ],
+            as_json=as_json,
+        )
+        if not payload["ok"]:
+            sys.exit(1)
+    except (VectorbtAdapterError, OSError, ValueError) as exc:
+        payload = {"ok": False, "error": str(exc), "strategy_evidence": False}
         _emit(payload, [f"FAILED: {exc}"], as_json=as_json)
         sys.exit(1)
 

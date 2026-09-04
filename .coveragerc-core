@@ -3,6 +3,7 @@ source = src/trading_engine_conformance
 branch = true
 omit =
     */adapters/nautilus/*
+    */adapters/vectorbt/*
 
 [report]
 fail_under = 95
