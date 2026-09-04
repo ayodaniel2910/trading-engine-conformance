@@ -1,0 +1,1 @@
+"""Optional adapter contract tests."""

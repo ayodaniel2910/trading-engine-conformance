@@ -1,5 +1,11 @@
 # Security Policy
 
+The optional NautilusTrader adapter is offline-only: it verifies the exact
+wheel digest and manifested inputs, clears secret/provider/proxy environment
+variables, denies socket operations, and exposes no credential, live-client,
+broker, subscription, or execution option. Reports always preserve
+`execution_authorized: false` and `profitability_claimed: false`.
+
 ## Scope and non-goals
 
 This project is a conformance toolkit: an immutable schema, artifact

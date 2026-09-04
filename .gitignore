@@ -1,4 +1,5 @@
 .venv/
+.venv-*/
 venv/
 __pycache__/
 *.py[cod]
@@ -17,5 +18,6 @@ coverage.xml
 .env
 TASK_PHASE*.md
 CLAUDE_*_RESULT.json
+CODEX_PHASE*_LAST.txt
 .DS_Store
 Thumbs.db

@@ -1,5 +1,26 @@
 # Architecture
 
+## Optional Nautilus second verifier
+
+`trading_engine_conformance.adapters.nautilus` is isolated from the core import
+graph. External-runtime imports occur only after the
+CPython/platform/version/wheel-digest probe and input-manifest verification.
+The launcher starts one fixed module with `sys.executable`, never a
+user-selected executable or shell command. The child strips credential,
+provider, and proxy variables; denies socket operations; and exposes no client,
+subscription, broker, execution, or process-control configuration.
+
+The worker reads only manifest-declared contained files and publishes through a
+new sibling staging directory followed by atomic rename. Native event
+dictionaries remain in `upstream_raw.json`, normalized neutral data stays
+separate, and discrepancies are machine-readable. Both execution authorization
+and profitability claims are permanently false.
+
+The DBN/MBO path accepts one explicit local file and required expected SHA-256.
+It never accepts a dataset, URL, key, or live source. Native flags/order IDs are
+retained in raw output while exact decoded timestamps and sequence values are
+emitted in neutral book deltas with an immutable manifest.
+
 ## Purpose
 
 This toolkit gives multiple trading-engine adapters (built elsewhere, later,

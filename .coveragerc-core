@@ -1,0 +1,9 @@
+[run]
+source = src/trading_engine_conformance
+branch = true
+omit =
+    */adapters/nautilus/*
+
+[report]
+fail_under = 95
+show_missing = true

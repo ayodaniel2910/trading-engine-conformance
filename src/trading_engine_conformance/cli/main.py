@@ -19,8 +19,15 @@ from typing import Any
 import click
 from pydantic import ValidationError
 
+from trading_engine_conformance.adapters.nautilus.capabilities import probe_environment
+from trading_engine_conformance.adapters.nautilus.dbn import decode_dbn_file
+from trading_engine_conformance.adapters.nautilus.errors import NautilusAdapterError
+from trading_engine_conformance.adapters.nautilus.golden import compare_golden_cases
+from trading_engine_conformance.adapters.nautilus.profile import NautilusResearchProfile
+from trading_engine_conformance.adapters.nautilus.runner import launch_worker
 from trading_engine_conformance.canonical import canonical_json_dumps
 from trading_engine_conformance.golden.cases import run_all_cases, run_case_file
+from trading_engine_conformance.integrity.atomic import atomic_write_bytes
 from trading_engine_conformance.integrity.manifest import (
     MANIFEST_FILENAME,
     build_manifest,
@@ -30,6 +37,7 @@ from trading_engine_conformance.integrity.manifest import (
 )
 from trading_engine_conformance.schema.envelope import RunArtifact
 from trading_engine_conformance.schema.export import export_json_schemas
+from trading_engine_conformance.schema.instrument import InstrumentIdentity
 from trading_engine_conformance.schema.run import RunHeader
 from trading_engine_conformance.schema.version import CURRENT_SCHEMA_VERSION
 
@@ -81,12 +89,155 @@ def doctor(as_json: bool) -> None:
         "golden_fixtures_dir": str(golden_dir),
         "golden_fixtures_found": fixture_count,
         "execution_authorized_locked_false": execution_locked,
-        "network_access": "disabled: no network code path exists in this package",
+        "network_access": "disabled: no client path; adapter workers deny socket operations",
         "live_execution_capability": "none",
     }
     lines = [f"{key}: {value}" for key, value in payload.items()]
     _emit(payload, lines, as_json=as_json)
     sys.exit(0 if ok else 1)
+
+
+@main.group("adapter")
+def adapter_group() -> None:
+    """Optional isolated second-verifier adapters."""
+
+
+@adapter_group.group("nautilus")
+def nautilus_group() -> None:
+    """Pinned NautilusTrader v1.231.0 offline research adapter."""
+
+
+@nautilus_group.command("doctor")
+@click.option(
+    "--wheel",
+    "wheel_path",
+    type=click.Path(path_type=Path, dir_okay=False),
+    help="Official pinned wheel whose SHA-256 will be verified.",
+)
+@click.option("--out", "output_path", type=click.Path(path_type=Path, dir_okay=False))
+@click.option("--json", "as_json", is_flag=True, default=False)
+def nautilus_doctor(wheel_path: Path | None, output_path: Path | None, as_json: bool) -> None:
+    """Probe exact Python, platform, package version and wheel provenance."""
+    result = probe_environment(wheel_path=wheel_path)
+    payload = result.as_dict()
+    if output_path is not None:
+        atomic_write_bytes(output_path, canonical_json_dumps(payload).encode("utf-8"))
+    lines = [f"{key}: {value}" for key, value in payload.items()]
+    _emit(payload, lines, as_json=as_json)
+    sys.exit(0 if result.ok else 1)
+
+
+@nautilus_group.command("run")
+@click.option("--input-dir", type=click.Path(path_type=Path, file_okay=False), required=True)
+@click.option("--output-dir", type=click.Path(path_type=Path, file_okay=False), required=True)
+@click.option("--json", "as_json", is_flag=True, default=False)
+def nautilus_run(input_dir: Path, output_dir: Path, as_json: bool) -> None:
+    """Launch a fresh offline worker for one manifested immutable request."""
+    try:
+        launch_worker(input_dir, output_dir)
+        payload = {
+            "ok": True,
+            "output_dir": str(output_dir),
+            "execution_authorized": False,
+            "profitability_claimed": False,
+        }
+        _emit(payload, [f"wrote isolated output to {output_dir}"], as_json=as_json)
+    except (NautilusAdapterError, OSError, ValueError) as exc:
+        payload = {
+            "ok": False,
+            "error": str(exc),
+            "execution_authorized": False,
+            "profitability_claimed": False,
+        }
+        _emit(payload, [f"FAILED: {exc}"], as_json=as_json)
+        sys.exit(1)
+
+
+def _load_model(path: Path, model: type[Any]) -> Any:
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        return model.model_validate(raw, strict=False)
+    except (OSError, json.JSONDecodeError, ValidationError) as exc:
+        raise click.ClickException(f"invalid metadata file {path}: {exc}") from exc
+
+
+@nautilus_group.command("decode-dbn")
+@click.option("--input-file", type=click.Path(path_type=Path, dir_okay=False), required=True)
+@click.option("--expected-sha256", required=True)
+@click.option("--instrument-json", type=click.Path(path_type=Path, dir_okay=False), required=True)
+@click.option(
+    "--wheel", "wheel_path", type=click.Path(path_type=Path, dir_okay=False), required=True
+)
+@click.option("--output-dir", type=click.Path(path_type=Path, file_okay=False), required=True)
+@click.option("--json", "as_json", is_flag=True, default=False)
+def nautilus_decode_dbn(
+    *,
+    input_file: Path,
+    expected_sha256: str,
+    instrument_json: Path,
+    wheel_path: Path,
+    output_dir: Path,
+    as_json: bool,
+) -> None:
+    """Decode one verified local DBN/MBO file; remote inputs are impossible."""
+    instrument = _load_model(instrument_json, InstrumentIdentity)
+    try:
+        payload = decode_dbn_file(
+            input_file=input_file,
+            expected_sha256=expected_sha256,
+            instrument=instrument,
+            wheel_path=wheel_path,
+            output_dir=output_dir,
+        )
+        _emit(
+            payload, [f"decoded {payload['record_count']} records to {output_dir}"], as_json=as_json
+        )
+    except (NautilusAdapterError, OSError, ValueError) as exc:
+        payload = {
+            "ok": False,
+            "error": str(exc),
+            "execution_authorized": False,
+            "profitability_claimed": False,
+        }
+        _emit(payload, [f"FAILED: {exc}"], as_json=as_json)
+        sys.exit(1)
+
+
+@nautilus_group.command("compare-golden")
+@click.option("--golden-dir", type=click.Path(path_type=Path, file_okay=False), required=True)
+@click.option("--profile-json", type=click.Path(path_type=Path, dir_okay=False), required=True)
+@click.option(
+    "--wheel", "wheel_path", type=click.Path(path_type=Path, dir_okay=False), required=True
+)
+@click.option("--output-dir", type=click.Path(path_type=Path, file_okay=False), required=True)
+@click.option("--json", "as_json", is_flag=True, default=False)
+def nautilus_compare_golden(
+    golden_dir: Path,
+    profile_json: Path,
+    wheel_path: Path,
+    output_dir: Path,
+    as_json: bool,
+) -> None:
+    """Compare market and limit/partial-fill microcases with the hand oracle."""
+    profile = _load_model(profile_json, NautilusResearchProfile)
+    try:
+        payload = compare_golden_cases(
+            golden_dir=golden_dir,
+            profile=profile,
+            wheel_path=wheel_path,
+            output_dir=output_dir,
+        )
+        _emit(payload, [f"wrote classified comparison to {output_dir}"], as_json=as_json)
+        sys.exit(0 if payload["ok"] else 1)
+    except (NautilusAdapterError, OSError, ValueError) as exc:
+        payload = {
+            "ok": False,
+            "error": str(exc),
+            "execution_authorized": False,
+            "profitability_claimed": False,
+        }
+        _emit(payload, [f"FAILED: {exc}"], as_json=as_json)
+        sys.exit(1)
 
 
 @main.group("schema")

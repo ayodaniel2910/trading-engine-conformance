@@ -38,7 +38,7 @@ jobs:
         run: python -m mypy
 
       - name: pytest with coverage
-        run: python -m pytest --cov --cov-report=xml --cov-report=term-missing
+        run: python -m pytest --cov --cov-config=.coveragerc-core --cov-report=xml --cov-report=term-missing
 
       - name: Build package
         run: python -m build
@@ -48,3 +48,38 @@ jobs:
         with:
           name: coverage-${{ matrix.os }}-py${{ matrix.python-version }}
           path: coverage.xml
+
+  nautilus-adapter:
+    name: pinned Nautilus adapter (Windows CPython 3.13)
+    runs-on: windows-latest
+    env:
+      TEC_NAUTILUS_WHEEL: ${{ github.workspace }}\wheelhouse\nautilus_trader-1.231.0-cp313-cp313-win_amd64.whl
+      TEC_NAUTILUS_INTEGRATION_PYTHON: ${{ github.workspace }}\.venv\Scripts\python.exe
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Download and verify exact wheel
+        shell: pwsh
+        run: |
+          python -m pip download --only-binary=:all: --no-deps nautilus_trader==1.231.0 -d wheelhouse
+          $actual = (Get-FileHash -Algorithm SHA256 $env:TEC_NAUTILUS_WHEEL).Hash.ToLowerInvariant()
+          $expected = "5fc8e08e98b6a47a5f0104c12ac6d8d3cefa0fd9dd2bb0d211c1b14517ff9aaf"
+          if ($actual -ne $expected) { throw "Nautilus wheel SHA-256 mismatch: $actual" }
+
+      - name: Install isolated adapter test environment
+        shell: pwsh
+        run: |
+          python -m venv .venv
+          .\.venv\Scripts\python.exe -m pip install -e ".[test,dev]" $env:TEC_NAUTILUS_WHEEL
+
+      - name: Probe pinned adapter
+        shell: pwsh
+        run: .\.venv\Scripts\tec.exe adapter nautilus doctor --wheel $env:TEC_NAUTILUS_WHEEL --json
+
+      - name: Adapter tests
+        shell: pwsh
+        run: .\.venv\Scripts\python.exe -m pytest --cov --cov-report=term-missing

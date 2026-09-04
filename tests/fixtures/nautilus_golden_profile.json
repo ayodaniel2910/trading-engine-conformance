@@ -1,0 +1,20 @@
+{
+  "nautilus_asset_class": "COMMODITY",
+  "underlying": "GC",
+  "lot_size": "1",
+  "maker_fee_rate": "0.001",
+  "taker_fee_rate": "0.001",
+  "initial_margin_rate": "0.05",
+  "maintenance_margin_rate": "0.05",
+  "latency_ns": 0,
+  "fill_model": "L1_FINITE_TRADE",
+  "queue_model": "NO_QUEUE_L1_DIAGNOSTIC",
+  "liquidity_consumption": "FINITE_EVENT_SIZE",
+  "limit_fill_probability": "1",
+  "slippage_probability": "0",
+  "trade_execution": true,
+  "reject_stop_orders": false,
+  "session_timezone": "America/Chicago",
+  "settlement_price": "2000.0",
+  "random_seed": 0
+}

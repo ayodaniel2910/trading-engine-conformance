@@ -1,5 +1,25 @@
 # Threat Model
 
+## Phase 2 optional-runtime boundary
+
+The pinned Nautilus wheel is treated as untrusted optional research code even
+after provenance verification. Before import, the adapter verifies the entire
+input manifest, rejects traversal and symlink escapes, strips environment
+secrets/proxies/providers, and installs fail-closed socket guards. The worker
+has no live data, broker, subscription, credential, signal-export, service,
+process-supervision, or order-routing option.
+
+Output is written only to a newly created staging directory under the explicit
+destination parent. Success atomically renames the complete directory; any
+exception removes staging and leaves no partial final output. Reruns cannot
+overwrite an existing directory.
+
+The local DBN decoder requires a caller-supplied SHA-256 before parsing and
+rejects URL/live/API-like sources and symlinks. Raw decoded records are retained
+apart from neutral records so metadata, timestamp, flag, and order-ID loss is
+auditable. Continuous instruments, implicit costs/margins/latency/queue/fills,
+precision rounding, and unclassified cross-engine differences are hard stops.
+
 ## Assets to protect
 
 1. **Integrity of comparison results.** A tampered or silently-corrupted

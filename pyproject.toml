@@ -38,6 +38,9 @@ Issues = "https://github.com/ayodaniel2910/trading-engine-conformance/issues"
 tec = "trading_engine_conformance.cli.main:main"
 
 [project.optional-dependencies]
+nautilus = [
+  "nautilus_trader==1.231.0; implementation_name == 'cpython' and python_version == '3.13' and platform_system == 'Windows'",
+]
 test = [
   "pytest>=8.2",
   "pytest-cov>=5.0",

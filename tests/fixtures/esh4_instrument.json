@@ -1,0 +1,14 @@
+{
+  "venue": "GLBX",
+  "symbol": "ESH4",
+  "asset_class": "FUTURE",
+  "currency": "USD",
+  "price_precision": 2,
+  "size_precision": 0,
+  "tick_size": "0.25",
+  "tick_value": "12.50",
+  "multiplier": "50",
+  "expiry_ts": 1711065600000000000,
+  "metadata_effective_ts": 1703422805718200244,
+  "is_continuous": false
+}

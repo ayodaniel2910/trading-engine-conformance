@@ -14,7 +14,8 @@ without trusting any engine's native output.
   ordering, gap handling, partial fills, fees, liquidation) independent of
   any external backtesting engine.
 - A no-network CLI (`tec`) to export the schema, validate artifacts, run
-  golden cases, and build/verify manifests.
+  golden cases, build/verify manifests, and invoke an optional isolated
+  NautilusTrader second verifier.
 
 ## What this is not
 
@@ -23,9 +24,9 @@ without trusting any engine's native output.
 - **Not a production execution or promotion system.** `execution_authorized`
   is hard-coded `Literal[False]` everywhere in the schema and cannot be
   changed by configuration, environment variable, or CLI flag.
-- **Not a broker, MT5, or live/paper trading integration.** There is no
-  network code, no credentials, and no process-control capability anywhere
-  in this repository.
+- **Not a broker, MT5, or live/paper trading integration.** There are no
+  network-capable clients or credential options. The optional worker strips
+  secret/provider variables and fails closed on socket operations.
 - **Not a profitability claim.** This toolkit validates *mechanics* — that
   an engine's declared order lifecycle, fills and ledger are internally
   consistent and causally sound — and *disagreement* between engines. It
@@ -68,6 +69,27 @@ tec manifest build ./run-dir
 tec manifest verify ./run-dir/manifest.json
 ```
 
+## Optional NautilusTrader verifier
+
+The Nautilus adapter accepts only the official CPython 3.13 Windows wheel at
+v1.231.0 with SHA-256
+`5fc8e08e98b6a47a5f0104c12ac6d8d3cefa0fd9dd2bb0d211c1b14517ff9aaf`.
+It remains outside core dependencies and is an offline second verifier only.
+
+```powershell
+python -m pip install -e ".[test,dev]" path\to\nautilus_trader-1.231.0-cp313-cp313-win_amd64.whl
+tec adapter nautilus doctor --wheel path\to\nautilus_trader-1.231.0-cp313-cp313-win_amd64.whl
+tec adapter nautilus run --input-dir manifested-input --output-dir new-output
+tec adapter nautilus compare-golden --golden-dir golden --profile-json explicit-profile.json --wheel path\to\wheel.whl --output-dir new-comparison
+tec adapter nautilus decode-dbn --input-file cached.mbo.dbn.zst --expected-sha256 HASH --instrument-json exact-outright.json --wheel path\to\wheel.whl --output-dir new-decode
+```
+
+Every economics/execution profile field is required. Continuous contracts,
+bar-path fill claims, one-sided quote coercion, unsupported order/event types,
+timestamp reversal, precision loss, mutable/tampered inputs, live/API DBN
+inputs, and output-directory reuse fail explicitly. Raw output is separate
+from normalized output and all differences remain classified.
+
 ## Running the test suite
 
 ```bash
@@ -82,6 +104,8 @@ tec manifest verify ./run-dir/manifest.json
   manifest build/verify, verification receipts.
 - `src/trading_engine_conformance/golden/` — the hand-calculated Decimal
   reference ledger and case runner.
+- `src/trading_engine_conformance/adapters/nautilus/` — pinned optional,
+  fresh-process offline second verifier and local DBN/MBO decoder.
 - `src/trading_engine_conformance/cli/` — the `tec` command-line interface.
 - `golden/` — human-readable golden case fixtures (JSON) with hand
   calculations and expected hashes.
