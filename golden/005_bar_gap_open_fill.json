@@ -1,0 +1,66 @@
+{
+  "case_id": "005_bar_gap_open_fill",
+  "description": "SELL STOP at 10.0 on a bar tape. The bar gaps open at 8.0 (below the stop, since open <= stop_price for a SELL stop) -- the fill is at the bar's OPEN (8.0), the first available price, never at the bar's close (8.2) and never at the stop level itself. Hand calc: fee = 0.001*8.0*5 = 0.0400.",
+  "instrument": {
+    "venue": "CME",
+    "symbol": "GCZ26",
+    "asset_class": "FUTURE",
+    "currency": "USD",
+    "price_precision": 1,
+    "size_precision": 0,
+    "tick_size": "0.1",
+    "tick_value": "10.00",
+    "multiplier": "100",
+    "expiry_ts": 1798761600000000000,
+    "metadata_effective_ts": 1767225600000000000,
+    "is_continuous": false
+  },
+  "config": {
+    "starting_cash": "100000",
+    "fee_rate": "0.001",
+    "margin_rate": "0.05"
+  },
+  "order_intents": [
+    {
+      "order_id": "ord-1",
+      "side": "SELL",
+      "order_type": "STOP",
+      "time_in_force": "GTC",
+      "quantity": "5",
+      "limit_price": null,
+      "stop_price": "10.0",
+      "expiry_ts": null,
+      "created_ts": 1767225600000000000,
+      "sequence": 0,
+      "linked_order_id": null,
+      "oco_group_id": null
+    }
+  ],
+  "events": [
+    {
+      "type": "bar",
+      "exchange_ts": 1767225602000000000,
+      "receive_ts": 1767225602000000000,
+      "sequence": 0,
+      "open": "8.0",
+      "high": "8.5",
+      "low": "7.5",
+      "close": "8.2",
+      "volume": "1000",
+      "bar_open_ts": 1767225601000000000,
+      "bar_close_ts": 1767225602000000000
+    }
+  ],
+  "expected": {
+    "fills": [
+      {
+        "order_id": "ord-1",
+        "side": "SELL",
+        "price": "8.0",
+        "quantity": "5",
+        "fee": "0.0400"
+      }
+    ],
+    "final_ledger_hash": "607386b1639dfcd8a657ff883bd0ca95f0da107023ccb424f044722c973d402d"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "case_id": "002_limit_buy_partial_then_full",
+  "description": "LIMIT BUY 10 @ limit 2000.5. First eligible trade prints 2000.0 (marketable, size 4 -> partial fill of 4 at the LIMIT price 2000.5, not the trade price). Second trade prints 1999.0 (still marketable) with size 20, filling the residual 6. Hand calc: fee1 = 0.001*2000.5*4 = 8.0020; fee2 = 0.001*2000.5*6 = 12.0030; cash = 100000 - (4*2000.5) - 8.0020 - (6*2000.5) - 12.0030 = 100000 - 8002.0 - 8.0020 - 12003.0 - 12.0030 = 79974.9950; avg_price = 2000.5 (both fills at same limit price).",
+  "instrument": {
+    "venue": "CME",
+    "symbol": "GCZ26",
+    "asset_class": "FUTURE",
+    "currency": "USD",
+    "price_precision": 1,
+    "size_precision": 0,
+    "tick_size": "0.1",
+    "tick_value": "10.00",
+    "multiplier": "100",
+    "expiry_ts": 1798761600000000000,
+    "metadata_effective_ts": 1767225600000000000,
+    "is_continuous": false
+  },
+  "config": {
+    "starting_cash": "100000",
+    "fee_rate": "0.001",
+    "margin_rate": "0.05"
+  },
+  "order_intents": [
+    {
+      "order_id": "ord-1",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "time_in_force": "GTC",
+      "quantity": "10",
+      "limit_price": "2000.5",
+      "stop_price": null,
+      "expiry_ts": null,
+      "created_ts": 1767225600000000000,
+      "sequence": 0,
+      "linked_order_id": null,
+      "oco_group_id": null
+    }
+  ],
+  "events": [
+    {
+      "type": "trade",
+      "exchange_ts": 1767225601000000000,
+      "receive_ts": 1767225601000000000,
+      "sequence": 0,
+      "price": "2000.0",
+      "size": "4",
+      "aggressor_side": "SELL"
+    },
+    {
+      "type": "trade",
+      "exchange_ts": 1767225602000000000,
+      "receive_ts": 1767225602000000000,
+      "sequence": 1,
+      "price": "1999.0",
+      "size": "20",
+      "aggressor_side": "SELL"
+    }
+  ],
+  "expected": {
+    "fills": [
+      {
+        "order_id": "ord-1",
+        "side": "BUY",
+        "price": "2000.5",
+        "quantity": "4",
+        "fee": "8.0020"
+      },
+      {
+        "order_id": "ord-1",
+        "side": "BUY",
+        "price": "2000.5",
+        "quantity": "6",
+        "fee": "12.0030"
+      }
+    ],
+    "final_ledger_hash": "edb8ec54279d73af435022592ced71dfd21d17100322a7ff80a1704fe9b46b5c"
+  }
+}

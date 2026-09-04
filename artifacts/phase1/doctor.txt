@@ -1,0 +1,9 @@
+ok: True
+python_version: 3.11.8
+python_version_ok: True
+schema_version: 1.0.0
+golden_fixtures_dir: golden
+golden_fixtures_found: 10
+execution_authorized_locked_false: True
+network_access: disabled: no network code path exists in this package
+live_execution_capability: none

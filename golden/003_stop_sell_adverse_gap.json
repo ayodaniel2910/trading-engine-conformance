@@ -1,0 +1,62 @@
+{
+  "case_id": "003_stop_sell_adverse_gap",
+  "description": "SELL STOP at 10.00 protecting a long. The first eligible trade gaps straight through the stop level to 8.00 (no trade prints exactly at 10.00). The stop must fill at the first available (worse) price 8.00, not at the stop level -- this is the adverse-gap rule. Hand calc: fee = 0.001*8.00*5 = 0.0400.",
+  "instrument": {
+    "venue": "CME",
+    "symbol": "GCZ26",
+    "asset_class": "FUTURE",
+    "currency": "USD",
+    "price_precision": 2,
+    "size_precision": 0,
+    "tick_size": "0.01",
+    "tick_value": "1.00",
+    "multiplier": "100",
+    "expiry_ts": 1798761600000000000,
+    "metadata_effective_ts": 1767225600000000000,
+    "is_continuous": false
+  },
+  "config": {
+    "starting_cash": "100000",
+    "fee_rate": "0.001",
+    "margin_rate": "0.05"
+  },
+  "order_intents": [
+    {
+      "order_id": "ord-1",
+      "side": "SELL",
+      "order_type": "STOP",
+      "time_in_force": "GTC",
+      "quantity": "5",
+      "limit_price": null,
+      "stop_price": "10.00",
+      "expiry_ts": null,
+      "created_ts": 1767225600000000000,
+      "sequence": 0,
+      "linked_order_id": null,
+      "oco_group_id": null
+    }
+  ],
+  "events": [
+    {
+      "type": "trade",
+      "exchange_ts": 1767225601000000000,
+      "receive_ts": 1767225601000000000,
+      "sequence": 0,
+      "price": "8.00",
+      "size": "50",
+      "aggressor_side": "SELL"
+    }
+  ],
+  "expected": {
+    "fills": [
+      {
+        "order_id": "ord-1",
+        "side": "SELL",
+        "price": "8.00",
+        "quantity": "5",
+        "fee": "0.0400"
+      }
+    ],
+    "final_ledger_hash": "ed826d803f296247f7d5e803bbe5c66ea61b01da492f4d61d51a6bac0f0d10de"
+  }
+}

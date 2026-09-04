@@ -1,0 +1,115 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "trading-engine-conformance"
+version = "0.1.0"
+description = "Engine-neutral conformance toolkit: immutable schema, integrity manifests and a hand-calculated golden oracle for comparing trading-engine mechanics. Validates mechanics and disagreement, never profitability."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+authors = [{ name = "trading-engine-conformance contributors" }]
+keywords = ["trading", "backtest", "conformance", "schema", "golden-oracle"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Financial and Insurance Industry",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Office/Business :: Financial :: Investment",
+  "Topic :: Software Development :: Testing",
+  "Typing :: Typed",
+]
+dependencies = [
+  "pydantic>=2.7,<3",
+  "click>=8.1,<9",
+]
+
+[project.urls]
+Homepage = "https://github.com/ayodaniel2910/trading-engine-conformance"
+Issues = "https://github.com/ayodaniel2910/trading-engine-conformance/issues"
+
+[project.scripts]
+tec = "trading_engine_conformance.cli.main:main"
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.2",
+  "pytest-cov>=5.0",
+  "hypothesis>=6.100",
+]
+security = [
+  "bandit>=1.7.9",
+  "pip-audit>=2.7",
+]
+dev = [
+  "ruff>=0.6",
+  "mypy>=1.11",
+  "pre-commit>=3.7",
+  "build>=1.2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/trading_engine_conformance"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "E", "F", "W", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF",
+  "S", "PL", "PTH", "DTZ", "TID",
+]
+ignore = ["PLR0913", "PLR2004"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "PLR0915", "PLR0912", "PLR0917"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["trading_engine_conformance"]
+mypy_path = "src"
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_reexport = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra --strict-markers --strict-config"
+testpaths = ["tests"]
+markers = [
+  "unit: unit tests",
+  "integration: integration tests",
+  "property: property/metamorphic tests",
+  "cli: CLI tests",
+  "adversarial: adversarial/security tests",
+  "benchmark: deterministic benchmark tests",
+]
+
+[tool.coverage.run]
+source = ["src/trading_engine_conformance"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]

@@ -1,0 +1,45 @@
+{
+  "case_id": "008_invalid_duplicate_event_sequence",
+  "description": "Deliberately invalid case: two events declare the same stream sequence number (0). The oracle must reject this outright (GoldenOracleError) rather than silently pick an arbitrary ordering -- sequence is the sole ordering authority and duplicates are never tolerated.",
+  "expect_error": true,
+  "instrument": {
+    "venue": "CME",
+    "symbol": "GCZ26",
+    "asset_class": "FUTURE",
+    "currency": "USD",
+    "price_precision": 1,
+    "size_precision": 0,
+    "tick_size": "0.1",
+    "tick_value": "10.00",
+    "multiplier": "100",
+    "expiry_ts": 1798761600000000000,
+    "metadata_effective_ts": 1767225600000000000,
+    "is_continuous": false
+  },
+  "config": {
+    "starting_cash": "100000",
+    "fee_rate": "0.001",
+    "margin_rate": "0.05"
+  },
+  "order_intents": [],
+  "events": [
+    {
+      "type": "trade",
+      "exchange_ts": 1767225601000000000,
+      "receive_ts": 1767225601000000000,
+      "sequence": 0,
+      "price": "2000.0",
+      "size": "10",
+      "aggressor_side": "BUY"
+    },
+    {
+      "type": "trade",
+      "exchange_ts": 1767225602000000000,
+      "receive_ts": 1767225602000000000,
+      "sequence": 0,
+      "price": "2001.0",
+      "size": "10",
+      "aggressor_side": "BUY"
+    }
+  ]
+}

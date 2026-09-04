@@ -1,0 +1,62 @@
+{
+  "case_id": "001_market_buy_full_fill",
+  "description": "MARKET BUY 10 @ first eligible trade (2000.0) with ample liquidity. Hand calc: fee = 0.001 * 2000.0 * 10 = 20.000; cash = 100000 - 20000.0 - 20.000 = 79980.000; position = +10 @ avg 2000.0.",
+  "instrument": {
+    "venue": "CME",
+    "symbol": "GCZ26",
+    "asset_class": "FUTURE",
+    "currency": "USD",
+    "price_precision": 1,
+    "size_precision": 0,
+    "tick_size": "0.1",
+    "tick_value": "10.00",
+    "multiplier": "100",
+    "expiry_ts": 1798761600000000000,
+    "metadata_effective_ts": 1767225600000000000,
+    "is_continuous": false
+  },
+  "config": {
+    "starting_cash": "100000",
+    "fee_rate": "0.001",
+    "margin_rate": "0.05"
+  },
+  "order_intents": [
+    {
+      "order_id": "ord-1",
+      "side": "BUY",
+      "order_type": "MARKET",
+      "time_in_force": "GTC",
+      "quantity": "10",
+      "limit_price": null,
+      "stop_price": null,
+      "expiry_ts": null,
+      "created_ts": 1767225600000000000,
+      "sequence": 0,
+      "linked_order_id": null,
+      "oco_group_id": null
+    }
+  ],
+  "events": [
+    {
+      "type": "trade",
+      "exchange_ts": 1767225601000000000,
+      "receive_ts": 1767225601000000000,
+      "sequence": 0,
+      "price": "2000.0",
+      "size": "50",
+      "aggressor_side": "BUY"
+    }
+  ],
+  "expected": {
+    "fills": [
+      {
+        "order_id": "ord-1",
+        "side": "BUY",
+        "price": "2000.0",
+        "quantity": "10",
+        "fee": "20.000"
+      }
+    ],
+    "final_ledger_hash": "d7700f024d46c6ed34b65fde37ccd998e07aae521e1bfbc1658046bc82d66380"
+  }
+}

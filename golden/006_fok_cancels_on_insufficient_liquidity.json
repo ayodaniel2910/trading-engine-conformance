@@ -1,0 +1,54 @@
+{
+  "case_id": "006_fok_cancels_on_insufficient_liquidity",
+  "description": "FOK (fill-or-kill) MARKET BUY 10. The only eligible trade has size 4 < 10, so the order must fill fully or not at all -- it is canceled with zero fills rather than partially filled. Hand calc: no fills, cash and position unchanged from the starting state.",
+  "instrument": {
+    "venue": "CME",
+    "symbol": "GCZ26",
+    "asset_class": "FUTURE",
+    "currency": "USD",
+    "price_precision": 1,
+    "size_precision": 0,
+    "tick_size": "0.1",
+    "tick_value": "10.00",
+    "multiplier": "100",
+    "expiry_ts": 1798761600000000000,
+    "metadata_effective_ts": 1767225600000000000,
+    "is_continuous": false
+  },
+  "config": {
+    "starting_cash": "100000",
+    "fee_rate": "0.001",
+    "margin_rate": "0.05"
+  },
+  "order_intents": [
+    {
+      "order_id": "ord-1",
+      "side": "BUY",
+      "order_type": "MARKET",
+      "time_in_force": "FOK",
+      "quantity": "10",
+      "limit_price": null,
+      "stop_price": null,
+      "expiry_ts": null,
+      "created_ts": 1767225600000000000,
+      "sequence": 0,
+      "linked_order_id": null,
+      "oco_group_id": null
+    }
+  ],
+  "events": [
+    {
+      "type": "trade",
+      "exchange_ts": 1767225601000000000,
+      "receive_ts": 1767225601000000000,
+      "sequence": 0,
+      "price": "2000.0",
+      "size": "4",
+      "aggressor_side": "SELL"
+    }
+  ],
+  "expected": {
+    "fills": [],
+    "final_ledger_hash": "3fe5def5a69b966dd8964c3c41f8c2642d79314644193aeb559199ffba377885"
+  }
+}

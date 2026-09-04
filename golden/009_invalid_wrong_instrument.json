@@ -1,0 +1,65 @@
+{
+  "case_id": "009_invalid_wrong_instrument",
+  "description": "Deliberately invalid case: the order intent references a different exact instrument (ESZ26) than the run's declared instrument (GCZ26). The oracle must reject this rather than silently matching it against the wrong instrument's market data.",
+  "expect_error": true,
+  "instrument": {
+    "venue": "CME",
+    "symbol": "GCZ26",
+    "asset_class": "FUTURE",
+    "currency": "USD",
+    "price_precision": 1,
+    "size_precision": 0,
+    "tick_size": "0.1",
+    "tick_value": "10.00",
+    "multiplier": "100",
+    "expiry_ts": 1798761600000000000,
+    "metadata_effective_ts": 1767225600000000000,
+    "is_continuous": false
+  },
+  "config": {
+    "starting_cash": "100000",
+    "fee_rate": "0.001",
+    "margin_rate": "0.05"
+  },
+  "order_intents": [
+    {
+      "order_id": "ord-1",
+      "instrument": {
+        "venue": "CME",
+        "symbol": "ESZ26",
+        "asset_class": "FUTURE",
+        "currency": "USD",
+        "price_precision": 2,
+        "size_precision": 0,
+        "tick_size": "0.25",
+        "tick_value": "12.50",
+        "multiplier": "50",
+        "expiry_ts": 1798761600000000000,
+        "metadata_effective_ts": 1767225600000000000,
+        "is_continuous": false
+      },
+      "side": "BUY",
+      "order_type": "MARKET",
+      "time_in_force": "GTC",
+      "quantity": "10",
+      "limit_price": null,
+      "stop_price": null,
+      "expiry_ts": null,
+      "created_ts": 1767225600000000000,
+      "sequence": 0,
+      "linked_order_id": null,
+      "oco_group_id": null
+    }
+  ],
+  "events": [
+    {
+      "type": "trade",
+      "exchange_ts": 1767225601000000000,
+      "receive_ts": 1767225601000000000,
+      "sequence": 0,
+      "price": "2000.0",
+      "size": "10",
+      "aggressor_side": "BUY"
+    }
+  ]
+}

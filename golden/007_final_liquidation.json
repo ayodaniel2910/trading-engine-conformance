@@ -1,0 +1,70 @@
+{
+  "case_id": "007_final_liquidation",
+  "description": "MARKET BUY 10 @ 2000.0 opens a long, then the run ends with final_liquidation_ts configured -- the open position is force-closed (SELL 10) at the last known trade price (2000.0). Hand calc: fee1 = 0.001*2000.0*10 = 20.000; fee2 (liquidation) = 0.001*2000.0*10 = 20.000; realized_pnl on the round trip at flat price = 0; final cash = 100000 - 20.000 - 20.000 = 99960.000; final position = 0.",
+  "instrument": {
+    "venue": "CME",
+    "symbol": "GCZ26",
+    "asset_class": "FUTURE",
+    "currency": "USD",
+    "price_precision": 1,
+    "size_precision": 0,
+    "tick_size": "0.1",
+    "tick_value": "10.00",
+    "multiplier": "100",
+    "expiry_ts": 1798761600000000000,
+    "metadata_effective_ts": 1767225600000000000,
+    "is_continuous": false
+  },
+  "config": {
+    "starting_cash": "100000",
+    "fee_rate": "0.001",
+    "margin_rate": "0.05",
+    "final_liquidation_ts": 1767225605000000000
+  },
+  "order_intents": [
+    {
+      "order_id": "ord-1",
+      "side": "BUY",
+      "order_type": "MARKET",
+      "time_in_force": "GTC",
+      "quantity": "10",
+      "limit_price": null,
+      "stop_price": null,
+      "expiry_ts": null,
+      "created_ts": 1767225600000000000,
+      "sequence": 0,
+      "linked_order_id": null,
+      "oco_group_id": null
+    }
+  ],
+  "events": [
+    {
+      "type": "trade",
+      "exchange_ts": 1767225601000000000,
+      "receive_ts": 1767225601000000000,
+      "sequence": 0,
+      "price": "2000.0",
+      "size": "10",
+      "aggressor_side": "BUY"
+    }
+  ],
+  "expected": {
+    "fills": [
+      {
+        "order_id": "ord-1",
+        "side": "BUY",
+        "price": "2000.0",
+        "quantity": "10",
+        "fee": "20.000"
+      },
+      {
+        "order_id": "__final_liquidation__",
+        "side": "SELL",
+        "price": "2000.0",
+        "quantity": "10",
+        "fee": "20.000"
+      }
+    ],
+    "final_ledger_hash": "db67e377df898ce103a9ee68ecaab0a57c3f46ea0d28c9633f58c021f885051b"
+  }
+}

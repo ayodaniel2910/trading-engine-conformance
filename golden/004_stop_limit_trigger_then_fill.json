@@ -1,0 +1,62 @@
+{
+  "case_id": "004_stop_limit_trigger_then_fill",
+  "description": "BUY STOP_LIMIT: stop 10.00, limit 10.50. First eligible trade prints 10.20 -- triggers the stop (>=10.00) and, on that same event, is also within the limit (<=10.50), so it fills immediately at the LIMIT price 10.50. Hand calc: fee = 0.001*10.50*5 = 0.0525.",
+  "instrument": {
+    "venue": "CME",
+    "symbol": "GCZ26",
+    "asset_class": "FUTURE",
+    "currency": "USD",
+    "price_precision": 2,
+    "size_precision": 0,
+    "tick_size": "0.01",
+    "tick_value": "1.00",
+    "multiplier": "100",
+    "expiry_ts": 1798761600000000000,
+    "metadata_effective_ts": 1767225600000000000,
+    "is_continuous": false
+  },
+  "config": {
+    "starting_cash": "100000",
+    "fee_rate": "0.001",
+    "margin_rate": "0.05"
+  },
+  "order_intents": [
+    {
+      "order_id": "ord-1",
+      "side": "BUY",
+      "order_type": "STOP_LIMIT",
+      "time_in_force": "GTC",
+      "quantity": "5",
+      "limit_price": "10.50",
+      "stop_price": "10.00",
+      "expiry_ts": null,
+      "created_ts": 1767225600000000000,
+      "sequence": 0,
+      "linked_order_id": null,
+      "oco_group_id": null
+    }
+  ],
+  "events": [
+    {
+      "type": "trade",
+      "exchange_ts": 1767225601000000000,
+      "receive_ts": 1767225601000000000,
+      "sequence": 0,
+      "price": "10.20",
+      "size": "50",
+      "aggressor_side": "BUY"
+    }
+  ],
+  "expected": {
+    "fills": [
+      {
+        "order_id": "ord-1",
+        "side": "BUY",
+        "price": "10.50",
+        "quantity": "5",
+        "fee": "0.0525"
+      }
+    ],
+    "final_ledger_hash": "3a63f930514a163c1b84752672693fe9fc09ffb5f01b9539b928d00518fb4f82"
+  }
+}

@@ -1,0 +1,1 @@
+{"additionalProperties":false,"properties":{"commit_hash":{"title":"Commit Hash","type":"string"},"is_dirty":{"title":"Is Dirty","type":"boolean"},"repository_url":{"anyOf":[{"type":"string"},{"type":"null"}],"default":null,"title":"Repository Url"}},"required":["commit_hash","is_dirty"],"title":"SourceRevision","type":"object"}
