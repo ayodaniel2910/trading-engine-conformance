@@ -43,7 +43,7 @@ nautilus = [
 ]
 vectorbt = [
   "vectorbt==1.1.0",
-  "plotly>=4.12,<7",
+  "plotly>=4.12,<8",
   "numpy==2.5.2",
   "pandas==3.0.5",
   "scipy==1.18.1",
