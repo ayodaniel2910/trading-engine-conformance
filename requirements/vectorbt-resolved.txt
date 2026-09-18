@@ -12,7 +12,7 @@ dill==0.4.1
 tqdm==4.70.0
 dateparser==1.4.3
 ImageIO==2.37.4
-scikit-learn==1.9.0
+scikit-learn==1.9.1
 schedule==1.2.2
 requests==2.34.2
 pytz==2026.3.post1
