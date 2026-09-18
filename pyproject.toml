@@ -47,7 +47,7 @@ vectorbt = [
   "numpy==2.5.2",
   "pandas==3.0.5",
   "scipy==1.18.1",
-  "matplotlib==3.11.1",
+  "matplotlib==3.11.2",
   "ipywidgets==8.1.9",
   "anywidget==0.11.0",
   "numba==0.67.0",
