@@ -42,7 +42,7 @@ nautilus = [
   "nautilus_trader==1.231.0; implementation_name == 'cpython' and python_version == '3.13' and platform_system == 'Windows'",
 ]
 vectorbt = [
-  "vectorbt==1.1.0",
+  "vectorbt==1.1.1",
   "plotly>=4.12,<7",
   "numpy==2.5.2",
   "pandas==3.0.5",
