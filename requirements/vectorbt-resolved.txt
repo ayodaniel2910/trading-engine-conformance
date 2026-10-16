@@ -1,5 +1,5 @@
 # Audited Python 3.13 stage-zero stack. vectorbt-rust is intentionally absent.
-vectorbt==1.1.0
+vectorbt==1.1.2
 plotly==6.9.0
 numpy==2.5.2
 pandas==3.0.5
