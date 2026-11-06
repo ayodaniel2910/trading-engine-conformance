@@ -16,4 +16,4 @@ scikit-learn==1.9.0
 schedule==1.2.2
 requests==2.34.2
 pytz==2026.3.post1
-mypy_extensions==1.1.0
+mypy_extensions==1.2.0
